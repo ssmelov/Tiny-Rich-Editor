@@ -89,22 +89,24 @@
 		if (buttonName == "source") {
 							
 			if (editor.disabled)
-			{
-				button.title="Show rich editor";
+			{				
 				editor.disabled=false;
 				editor.frame.css("display","block");
 				editor.area.css("display","none");
-				enableButtons(editor);							
+				enableButtons(editor);											
 				$(li).css('backgroundPosition', 12 * -24);
+				$(li).removeAttr('title');
+				$(li).attr('title', 'Show source');
 			}
 			else
 			{
-				button.title = "Show rich text";
 				editor.disabled=true;
 				editor.frame.css("display","none");
 				editor.area.css("display","block");
 				disableButtons(editor);
 				$(li).css('backgroundPosition', 13 * -24);
+				$(li).removeAttr('title');
+				$(li).attr('title', 'Show rich text');				
 			}			
 		}
 		else if (!execCommand(editor, button.command, li))
@@ -216,6 +218,7 @@
 			if (button.name != "source") {					
 				$(elem).removeClass("tre-disabled");			
 				$(elem).removeAttr("disabled");		
+				$(elem).hover(hoverIn, hoverOut)
 			}				
 		});	
 	}
@@ -228,7 +231,8 @@
 			
 			if (button.name !="source") {			
 				$(elem).addClass("tre-disabled");
-				$(elem).attr("disabled", "disabled");			
+				$(elem).attr("disabled", "disabled");
+				$(elem).unbind('mouseenter mouseleave');
 			}
 		});
 	}
