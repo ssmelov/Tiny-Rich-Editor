@@ -10,22 +10,24 @@
 		defaults : {
 			width:	500,
 			height: 250,
-			buttonbar: "bold italic strikethrough | unorderedlist orderedlist | alignleft aligncenter alignright",
+			buttonbar: "bold italic strikethrough | unorderedlist orderedlist | alignleft aligncenter alignright | link image | source",
 			bodyStyle: "margin:4px; font:10pt Arial,Verdana; cursor:text"
 		},
 		buttons :
 		{
 			bold : { name : "bold", title: "Bold", command: "bold", imgIndex : 0 },
 			italic : { name: "italic", title: "Italic", command: "italic", imgIndex : 1 },
-			strikethrough : { name: "strikethrough", title:"Strikethrough", command: "strikethrough", imgIndex : 3 },
-			unorderedlist : { name : "unorderedlist", title: "Unordered list", command: "insertunorderedlist", imgIndex : 12 },
-			orderedlist : { name: "orderedlist", title: "Ordered list", command: "insertorderedlist", imgIndex : 13 },
-			alignleft : { name: "alignleft", title: "Align left", command: "justifyleft", imgIndex : 16 },
-			aligncenter: { name: "aligncenter", title: "Align center", command: "justifycenter", imgIndex : 17},
-			alignright : { name: "alignright", title: "Align right", command: "jutifyright", imgIndex : 18 }
-		},
-		imagesPath : function() { return imagesPath(); }
-	};
+			strikethrough : { name: "strikethrough", title:"Strikethrough", command: "strikethrough", imgIndex : 2 },
+			unorderedlist : { name : "unorderedlist", title: "Unordered list", command: "insertunorderedlist", imgIndex : 3 },
+			orderedlist : { name: "orderedlist", title: "Ordered list", command: "insertorderedlist", imgIndex : 4 },
+			alignleft : { name: "alignleft", title: "Align left", command: "justifyleft", imgIndex : 5 },
+			aligncenter: { name: "aligncenter", title: "Align center", command: "justifycenter", imgIndex : 6},
+			alignright : { name: "alignright", title: "Align right", command: "justifyright", imgIndex : 7 },
+			link : { name: "link", title: "Hyperlink", command: "link", imgIndex : 10 },
+			image : { name: "image", title: "Image", command: "image", imgIndex : 9 },
+			source : { name: "source", title: "Show source", command: "source", imgIndex : 12 }
+		}
+	}
 	
 	$.fn.treditor = function(options) {
 		
@@ -35,7 +37,7 @@
 				new treditor(elem, options);
 			}			
 		});		
-	};	
+	}
 	
 	///////////////////////
 	//Private Variables	
@@ -53,10 +55,14 @@
 		//merge defaults and options without modifying defaults
 		editor.settings = $.extend({}, $.treditor.defaults, options);
 		
+		editor.disabled=false;
+		
 		//hide textarea
 		editor.area = $(textarea)
 						.hide()
-						.blur(function() { alert('hello world!') });
+						.blur(function() { 
+							updateIFrame(editor);
+						});
 	
 		//create main container
 		editor.main = $("<div>").addClass("tre-main")
@@ -68,7 +74,7 @@
 		
 		//create iframe
 		createIFrame(editor);
-	};
+	}
 		
 	/////////////////////
 	//Event Handlers	
@@ -76,14 +82,42 @@
 	function buttonClick(e) {
 	
 		var editor = this,
-		    buttonDiv = e.target,
-			buttonName = $.data(buttonDiv, 'buttonName'),
+		    li = e.target,
+			buttonName = $.data(li, 'buttonName'),
 			button = $.treditor.buttons[buttonName];
-									
-		if (!execCommand(editor, button.command, buttonDiv))
-			return false;			
-	};
 		
+		if (buttonName == "source") {
+							
+			if (editor.disabled)
+			{
+				button.title="Show rich editor";
+				editor.disabled=false;
+				editor.frame.css("display","block");
+				editor.area.css("display","none");
+				enableButtons(editor);							
+				$(li).css('backgroundPosition', 12 * -24);
+			}
+			else
+			{
+				button.title = "Show rich text";
+				editor.disabled=true;
+				editor.frame.css("display","none");
+				editor.area.css("display","block");
+				disableButtons(editor);
+				$(li).css('backgroundPosition', 13 * -24);
+			}			
+		}
+		else if (!execCommand(editor, button.command, li))
+			return false;			
+	}
+
+	function hoverIn(e) {
+		$(e.target).addClass("tre-hover");
+	}
+	
+	function hoverOut(e) {
+		$(e.target).removeClass("tre-hover");
+	}
 
 	//////////////////////
 	//Private Functions
@@ -115,6 +149,7 @@
 					.addClass('tre-button')
 					.attr("title", button.title)
 					.bind("click", $.proxy(buttonClick, editor))
+					.hover(hoverIn, hoverOut)
 					.appendTo(ul);
 								
 				//prepare button image
@@ -145,13 +180,19 @@
 		var code = editor.area.val();		
 		code = code.replace(/<(?=\/?script)/ig, "&lt;");
 		$(editor.doc.body).html(code);
-			
+		
+
+		$(editor.frame[0].contentWindow)
+					.blur( function() {
+							updateTextArea(editor);
+					});		
+		
 		editor.frame.show();
 		
 		var wid = editor.main.width();	
 		editor.buttonbar.height(25);
 		editor.frame.width(wid).height(200);
-		editor.area.width(wid).height(25);
+		editor.area.width(wid).height(200);
 
 		try {
 			if (isIE) editor.doc.body.contentEditable = true;
@@ -160,13 +201,49 @@
 		catch(e) {
 		}
 		
-	};	
+	}
 	
-	function execCommand(editor, command, button) {
+	function execCommand(editor, command, button) {	
+		return editor.doc.execCommand(command, 0, null);				
+	}
 		
-		return editor.doc.execCommand(command, 0, null);
-					
-	};	
+	function enableButtons(editor) {
+		
+		$.each(editor.buttonbar.find(".tre-button"), function(idx, elem) {
+						
+			var button = $.treditor.buttons[$.data(elem, "buttonName")];
+			
+			if (button.name != "source") {					
+				$(elem).removeClass("tre-disabled");			
+				$(elem).removeAttr("disabled");		
+			}				
+		});	
+	}
+	
+	function disableButtons(editor) {
+		
+		$.each(editor.buttonbar.find(".tre-button"), function(idx, elem) {
+						
+			var button = $.treditor.buttons[$.data(elem, "buttonName")];
+			
+			if (button.name !="source") {			
+				$(elem).addClass("tre-disabled");
+				$(elem).attr("disabled", "disabled");			
+			}
+		});
+	}
+	
+	function updateTextArea(editor) {
+		var html = $(editor.doc.body).html();					
+		editor.area.val(html);		
+	}
+	
+	function updateIFrame(editor) {
+	
+		var html = editor.area.val();		
+		//html = html.replace();
+		$(editor.doc.body).html(html);	
+	}
 		
 }) (jQuery);
 
