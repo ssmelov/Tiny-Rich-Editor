@@ -4,11 +4,11 @@
 
 .tre-main textarea {border:1px solid #999; margin:0px; padding:4px; font:10pt Arial,Verdana; }
 
-.tre-button-bar ul  { list-style-type:none; padding:0px; margin:0px; cursor:hand;}
+.tre-button-bar ul  { list-style-type:none; padding:0px; margin:0px; }
 
-.tre-separator {float:left; width:1px; height:23px; margin:1px 0 1px 0; }
+.tre-separator {float:left; width:2px; height:24px; margin-left:1px; margin-right:1px; cursor:default; }
 
-.tre-button { float:left; width:24px; height:24px; margin:1px 0 1px 0; background: url('images/buttons.gif')}
+.tre-button { float:left; width:24px; height:24px; margin:1px 0 1px 0; background: url('images/buttons.gif'); cursor:hand;}
 
 .tre-hover { background-color:#DEE7F7; }
 

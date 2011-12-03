@@ -80,7 +80,7 @@
 	//Event Handlers	
 	/////////////////////
 	function buttonClick(e) {
-	
+			
 		var editor = this,
 		    li = e.target,
 			buttonName = $.data(li, 'buttonName'),
@@ -110,7 +110,9 @@
 			}			
 		}
 		else if (!execCommand(editor, button.command, li))
-			return false;			
+			return false;
+
+		focus(editor);
 	}
 
 	function hoverIn(e) {
@@ -238,6 +240,7 @@
 	}
 	
 	function updateTextArea(editor) {
+		
 		var html = $(editor.doc.body).html();					
 		editor.area.val(html);		
 	}
@@ -248,9 +251,12 @@
 		//html = html.replace();
 		$(editor.doc.body).html(html);	
 	}
+	
+	function focus(editor) {
+		
+		if (editor.disabled) editor.area.focus();
+			else editor.frame[0].contentWindow.focus();      
+
+	}
 		
 }) (jQuery);
-
-
-
-
